@@ -5,6 +5,11 @@
 
 #include "demo_genetlink.h"
 
+#include <linux/version.h>
+/* GENL_ID_GENERATE was deprecated since Linux version >= 4.10.0 */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) || !defined(GENL_ID_GENERATE)
+#define GENL_ID_GENERATE 0
+#endif
 
 static struct genl_family demo_family = {
 	.id			= GENL_ID_GENERATE,
@@ -162,7 +167,9 @@ static int __init demo_genetlink_init(void)
 	int ret;  
 	pr_info("demo generic netlink module %d init...\n", DEMO_GENL_VERSION);  
   
-	ret = genl_register_family_with_ops(&demo_family, demo_ops);  
+	demo_family.ops = demo_ops;
+	demo_family.n_ops = 1;
+	ret = genl_register_family(&demo_family);
 	if (ret != 0) {  
 		pr_info("failed to init demo generic netlink example module\n");  
 		return ret;
