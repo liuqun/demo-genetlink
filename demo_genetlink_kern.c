@@ -33,7 +33,7 @@ static int demo_prepare_reply(struct genl_info *info, u8 cmd, struct sk_buff **s
 	if (!info)
 		return -EINVAL;
 
-	/* ¹¹½¨»Ø·¢ÏûÏ¢Í· */	
+	/* æ„å»ºå›å‘æ¶ˆæ¯å¤´ */
 	reply = genlmsg_put_reply(skb, info, &demo_family, 0, cmd);
 	if (reply == NULL) {
 		nlmsg_free(skb);
@@ -50,9 +50,9 @@ static int demo_mk_reply(struct sk_buff *skb, int aggr, void *data, int len)
     return nla_put(skb, aggr, len, data); 
 
 	/* 
-	 * nlaÊÇ¿ÉÒÔ·ÖlevelµÄ(µ÷ÓÃnla_nest_startºÍnla_nest_end½øĞĞ)£¬
-	 * ÓÉÓÚ±¾Ê¾Àı³ÌĞòattr½ÏÉÙ£¬ËùÒÔ¾Í²»½øĞĞ·Ö²ãÁË£¬·Ö²ã¾ßÌå¿É¼û
-	 * ÄÚºËÖĞÆäËûÊ¹ÓÃµ½genetlinkµÄµØ·½¡£
+	 * nlaæ˜¯å¯ä»¥åˆ†levelçš„(è°ƒç”¨nla_nest_startå’Œnla_nest_endè¿›è¡Œ)ï¼Œ
+	 * ç”±äºæœ¬ç¤ºä¾‹ç¨‹åºattrè¾ƒå°‘ï¼Œæ‰€ä»¥å°±ä¸è¿›è¡Œåˆ†å±‚äº†ï¼Œåˆ†å±‚å…·ä½“å¯è§
+	 * å†…æ ¸ä¸­å…¶ä»–ä½¿ç”¨åˆ°genetlinkçš„åœ°æ–¹ã€‚
 	 */
 }  
 
@@ -74,7 +74,7 @@ static int cmd_attr_echo_message(struct genl_info *info)
 	size_t size;
 	int ret;
 
-	/* ¶ÁÈ¡ÓÃ»§ÏÂ·¢µÄÏûÏ¢ */
+	/* è¯»å–ç”¨æˆ·ä¸‹å‘çš„æ¶ˆæ¯ */
 	na = info->attrs[DEMO_CMD_ATTR_MESG];
 	if (!na)
 		return -EINVAL;
@@ -82,20 +82,20 @@ static int cmd_attr_echo_message(struct genl_info *info)
 	msg = (char *)nla_data(na);
 	pr_info("demo generic netlink receive echo mesg %s\n", msg);  
 
-	/* »Ø·¢ÏûÏ¢ */
+	/* å›å‘æ¶ˆæ¯ */
 	size = nla_total_size(strlen(msg)+1);
 	
-	/* ×¼±¸¹¹½¨ÏûÏ¢ */
+	/* å‡†å¤‡æ„å»ºæ¶ˆæ¯ */
 	ret = demo_prepare_reply(info, DEMO_CMD_REPLY, &rep_skb, size);
 	if (ret < 0)
 		return ret;
 
-	/* Ìî³äÏûÏ¢ */
+	/* å¡«å……æ¶ˆæ¯ */
 	ret = demo_mk_reply(rep_skb, DEMO_CMD_ATTR_MESG, msg, size); 
 	if (ret < 0)
 		goto err;
 
-	/* Íê³É¹¹½¨²¢·¢ËÍ */
+	/* å®Œæˆæ„å»ºå¹¶å‘é€ */
 	return demo_send_reply(rep_skb, info);
 
 err:
@@ -111,7 +111,7 @@ static int cmd_attr_echo_data(struct genl_info *info)
 	size_t size;
 	int ret;
 
-	/* ¶ÁÈ¡ÓÃ»§ÏÂ·¢µÄÊı¾İ */
+	/* è¯»å–ç”¨æˆ·ä¸‹å‘çš„æ•°æ® */
 	na = info->attrs[DEMO_CMD_ATTR_DATA];
 	if (!na)
 		return -EINVAL;
@@ -119,14 +119,14 @@ static int cmd_attr_echo_data(struct genl_info *info)
 	data = nla_get_s32(info->attrs[DEMO_CMD_ATTR_DATA]);
 	pr_info("demo generic netlink receive echo data %d\n", data);  
 
-	/* »Ø·¢Êı¾İ */
+	/* å›å‘æ•°æ® */
 	size = nla_total_size(sizeof(s32));
 
 	ret = demo_prepare_reply(info, DEMO_CMD_REPLY, &rep_skb, size);
 	if (ret < 0)
 		return ret;
 
-	/* ÎªÁË¼òµ¥ÕâÀïÖ±½Óµ÷ÓÃnetlink¿âº¯Êı(¶ÔÓÚĞèÇóµÄ·á¸»¿ÉÒÔ×ÔĞĞ·â×°) */
+	/* ä¸ºäº†ç®€å•è¿™é‡Œç›´æ¥è°ƒç”¨netlinkåº“å‡½æ•°(å¯¹äºéœ€æ±‚çš„ä¸°å¯Œå¯ä»¥è‡ªè¡Œå°è£…) */
 	ret = nla_put_s32(rep_skb, DEMO_CMD_ATTR_DATA, data);
 	if (ret < 0)
 		goto err;

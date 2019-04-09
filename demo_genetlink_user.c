@@ -50,7 +50,7 @@ static int demo_create_nl_socket(int protocol)
 	int fd;
 	struct sockaddr_nl local;
 
-	/* ´´½¨socket */
+	/* åˆ›å»ºsocket */
 	fd = socket(AF_NETLINK, SOCK_RAW, protocol);
 	if (fd < 0)
 		return -1;
@@ -59,7 +59,7 @@ static int demo_create_nl_socket(int protocol)
 	local.nl_family = AF_NETLINK;
 	local.nl_pid = getpid();
 
-	/* Ê¹ÓÃ±¾½ø³ÌµÄpid½øĞĞ°ó¶¨ */
+	/* ä½¿ç”¨æœ¬è¿›ç¨‹çš„pidè¿›è¡Œç»‘å®š */
 	if (bind(fd, (struct sockaddr *) &local, sizeof(local)) < 0)
 		goto error;
 
@@ -82,7 +82,7 @@ static int demo_send_cmd(int sd, __u16 nlmsg_type, __u32 nlmsg_pid,
 
 	struct msgtemplate msg;
 
-	/* Ìî³ämsg (±¾º¯Êı·¢ËÍµÄmsgÖ»Ìî³äÒ»¸öattr) */
+	/* å¡«å……msg (æœ¬å‡½æ•°å‘é€çš„msgåªå¡«å……ä¸€ä¸ªattr) */
 	msg.n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
 	msg.n.nlmsg_type = nlmsg_type;
 	msg.n.nlmsg_flags = NLM_F_REQUEST;
@@ -101,7 +101,7 @@ static int demo_send_cmd(int sd, __u16 nlmsg_type, __u32 nlmsg_pid,
 	memset(&nladdr, 0, sizeof(nladdr));
 	nladdr.nl_family = AF_NETLINK;
 
-	/* Ñ­»··¢ËÍÖ±µ½·¢ËÍÍê³É */
+	/* å¾ªç¯å‘é€ç›´åˆ°å‘é€å®Œæˆ */
 	while ((r = sendto(sd, buf, buflen, 0, (struct sockaddr *) &nladdr,
 			   sizeof(nladdr))) < buflen) {
 		if (r > 0) {
@@ -128,19 +128,19 @@ static int demo_get_family_id(int sd)
 	struct nlattr *na;
 	int rep_len;
 
-	/* ¸ù¾İgen family name²éÑ¯family id */
+	/* æ ¹æ®gen family nameæŸ¥è¯¢family id */
 	strcpy(name, DEMO_GENL_NAME);
 	ret = demo_send_cmd(sd, GENL_ID_CTRL, getpid(), CTRL_CMD_GETFAMILY,
 			CTRL_ATTR_FAMILY_NAME, (void *)name, strlen(DEMO_GENL_NAME)+1);
 	if (ret < 0)
 		return 0;	
 
-	/* ½ÓÊÕÄÚºËÏûÏ¢ */
+	/* æ¥æ”¶å†…æ ¸æ¶ˆæ¯ */
 	rep_len = recv(sd, &ans, sizeof(ans), 0);
 	if (ans.n.nlmsg_type == NLMSG_ERROR || (rep_len < 0) || !NLMSG_OK((&ans.n), rep_len))
 		return 0;
 
-	/* ½âÎöfamily id */
+	/* è§£æfamily id */
 	na = (struct nlattr *) GENLMSG_DATA(&ans);
 	na = (struct nlattr *) ((char *) na + NLA_ALIGN(na->nla_len));
 	if (na->nla_type == CTRL_ATTR_FAMILY_ID) {
@@ -175,7 +175,7 @@ void demo_msg_recv_analysis(int sd, int num)
 
 	while (num--) {
 		
-		/* ½ÓÊÕÄÚºËÏûÏ¢»ØÏÔ */
+		/* æ¥æ”¶å†…æ ¸æ¶ˆæ¯å›æ˜¾ */
 		rep_len = recv(sd, &msg, sizeof(msg), 0);
 		if (rep_len < 0 || demo_msg_check(msg, rep_len) < 0) {
 			fprintf(stderr, "nonfatal reply error: errno %d\n", errno);
@@ -189,17 +189,17 @@ void demo_msg_recv_analysis(int sd, int num)
 		na = (struct nlattr *) GENLMSG_DATA(&msg);
 		len = 0;
 		
-		/* Ò»¸ömsgÀï¿ÉÄÜÓĞ¶à¸öattr£¬ËùÒÔÕâÀïÑ­»·¶ÁÈ¡ */
+		/* ä¸€ä¸ªmsgé‡Œå¯èƒ½æœ‰å¤šä¸ªattrï¼Œæ‰€ä»¥è¿™é‡Œå¾ªç¯è¯»å– */
 		while (len < rep_len) {
 			len += NLA_ALIGN(na->nla_len);
 			switch (na->nla_type) {
 			case DEMO_CMD_ATTR_MESG:
-				/* ½ÓÊÕµ½ÄÚºË×Ö·û´®»ØÏÔ */
+				/* æ¥æ”¶åˆ°å†…æ ¸å­—ç¬¦ä¸²å›æ˜¾ */
 				string = (char *) NLA_DATA(na);
 				printf("echo reply:%s\n", string);
 				break;
 			case DEMO_CMD_ATTR_DATA:
-				/* ½ÓÊÕµ½ÄÚºËÊı¾İ»ØÏÔ */
+				/* æ¥æ”¶åˆ°å†…æ ¸æ•°æ®å›æ˜¾ */
 				data = *(int *) NLA_DATA(na);
 				printf("echo reply:%u\n", data);
 				break;	
@@ -227,14 +227,14 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	/* ³õÊ¼»¯socket */	
+	/* åˆå§‹åŒ–socket */
 	nl_fd = demo_create_nl_socket(NETLINK_GENERIC);
 	if (nl_fd < 0) {
 		fprintf(stderr, "failed to create netlink socket\n");
 		return 0;		
 	}
 
-	/* »ñÈ¡family id */
+	/* è·å–family id */
 	nl_family_id = demo_get_family_id(nl_fd);
 	if (!nl_family_id) {
 		fprintf(stderr, "Error getting family id, errno %d\n", errno);
@@ -242,7 +242,7 @@ int main(int argc, char* argv[])
 	}
 	PRINTF("family id %d\n", nl_family_id);
 
-	/* ·¢ËÍ×Ö·û´®ÏûÏ¢ */
+	/* å‘é€å­—ç¬¦ä¸²æ¶ˆæ¯ */
 	my_pid = getpid();
 	string = argv[1];
 	data = atoi(argv[2]);
@@ -254,7 +254,7 @@ int main(int argc, char* argv[])
 		goto out;
 	}
 
-	/* ·¢ËÍÊı¾İÏûÏ¢ */
+	/* å‘é€æ•°æ®æ¶ˆæ¯ */
 	ret = demo_send_cmd(nl_fd, nl_family_id, my_pid, DEMO_CMD_ECHO,
 			  DEMO_CMD_ATTR_DATA, &data, sizeof(data));
 	if (ret < 0) {
@@ -262,7 +262,7 @@ int main(int argc, char* argv[])
 		goto out;
 	}
 
-	/* ½ÓÊÕÓÃ»§ÏûÏ¢²¢½âÎö(±¾Ê¾Àı³ÌĞòÖĞ½ö½âÎö2¸ö) */
+	/* æ¥æ”¶ç”¨æˆ·æ¶ˆæ¯å¹¶è§£æ(æœ¬ç¤ºä¾‹ç¨‹åºä¸­ä»…è§£æ2ä¸ª) */
 	demo_msg_recv_analysis(nl_fd, argc-1);
 
 out:
